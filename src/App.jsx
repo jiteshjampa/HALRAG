@@ -226,7 +226,7 @@ export default function App() {
       {tab !== "demo" && (
         <div style={{ background: "#060a0f", borderBottom: "1px solid #1a2840", padding: "40px 2rem" }}>
           <div style={{ maxWidth: 900, margin: "0 auto" }}>
-            <div style={S.badge}>Generative AI · Final Project · SE25MAID020</div>
+            <div style={S.badge}>Generative AI</div>
             <h1 style={{ ...S.h1, fontSize: 36 }}>HalluciScan — Financial RAG Validator</h1>
             <p style={{ ...S.sub, fontSize: 15, marginBottom: 0 }}>Indian Financial News QA — 26,961 articles · FAISS retrieval · LLM-as-Judge · SelfCheckGPT</p>
           </div>
