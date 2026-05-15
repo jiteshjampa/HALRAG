@@ -168,59 +168,16 @@ export default function App() {
       await delay(600);
       setStage(2);
 
-      // Stage 2+3+4: Call Anthropic API to simulate RAG pipeline
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      // Stage 2+3+4: Call via Vercel serverless proxy (avoids CORS)
+      const response = await fetch("/api/pipeline", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: `You are simulating a Financial RAG + Hallucination Detection pipeline over Indian financial news (26,961 articles from Economic Times, Mint, Business Standard). 
-
-Given a user query, respond ONLY with a JSON object (no markdown, no extra text) in this exact schema:
-{
-  "retrieved": [
-    {"score": 0.00, "source": "Article headline snippet", "text": "Relevant excerpt from retrieved chunk (2-3 sentences)"},
-    {"score": 0.00, "source": "Article headline snippet", "text": "Relevant excerpt"},
-    {"score": 0.00, "source": "Article headline snippet", "text": "Relevant excerpt"}
-  ],
-  "answer": "The RAG-generated answer (2-4 sentences, grounded strictly in the retrieved context)",
-  "validation": {
-    "verdict": "MOSTLY_RELIABLE|PARTIALLY_RELIABLE|UNRELIABLE",
-    "sentences": [
-      {"text": "Sentence from the answer.", "label": "SUPPORTED|UNSUPPORTED|CONTRADICTED", "reason": "Brief reason (1 sentence)"}
-    ],
-    "support_pct": 0,
-    "halluc_pct": 0
-  },
-  "selfcheck": {
-    "consistency": 0.00,
-    "risk": "LOW|MEDIUM|HIGH",
-    "pairwise": [0.00, 0.00, 0.00]
-  },
-  "agreement": true
-}
-
-Rules:
-- Scores in retrieved should be realistic (0.55-0.72 range)
-- Make the answer factually grounded but occasionally include 1-2 sentences that are UNSUPPORTED to show the validator catching hallucinations
-- The validation must reflect real per-sentence labeling
-- selfcheck consistency: LOW risk = 0.75-0.95, MEDIUM = 0.45-0.74, HIGH = 0.20-0.44
-- agreement = true when validator verdict and selfcheck risk both agree (reliable+LOW, or unreliable+HIGH)`,
-          messages: [{ role: "user", content: query }]
-        })
+        body: JSON.stringify({ query }),
       });
 
       const data = await response.json();
-      if (data.error) throw new Error(data.error.message);
-
-      const raw = data.content[0].text;
-      let parsed;
-      try {
-        parsed = JSON.parse(raw.replace(/```json|```/g, "").trim());
-      } catch {
-        throw new Error("Could not parse pipeline response.");
-      }
+      if (data.error) throw new Error(data.error);
+      const parsed = data;
 
       setStage(3);
       await delay(400);
